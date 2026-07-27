@@ -52,107 +52,105 @@ A PASS with no margin of safety is not possible — price discipline is non-nego
 
 ### Step 4: Generate the One-Page Report
 
-Output exactly this structure — no more, no less:
+Output exactly this Markdown structure — no more, no less:
+
+```markdown
+# R-InvestIQ Verdict Report
+
+## {Company Name} ({Ticker}) · {Exchange} · {Date}
 
 ---
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-R-InvestIQ VERDICT REPORT
-{Company Name} ({Ticker}) · {Exchange} · {Date}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Verdict: {🟢 PASS / 🟡 WATCH / 🔴 AVOID}
 
-VERDICT:  🟢 PASS  /  🟡 WATCH  /  🔴 AVOID
-          (circle one — bold the applicable one)
+**One-line reason:** {Single sentence explaining the verdict — e.g. "Exceptional business but trading at 34x earnings with no margin of safety at $287."}
 
-ONE-LINE REASON:
-{Single sentence explaining the verdict — e.g. "Exceptional business
- but trading at 34x earnings with no margin of safety at $287."}
+---
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-BUSINESS SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Business Summary
 
-What it does:      {One sentence — how the company makes money}
-Moat:              {One sentence — what protects it from competition}
-10-year outlook:   {One sentence — where it will likely be in 10 years}
+| | |
+|---|---|
+| **What it does** | {One sentence — how the company makes money} |
+| **Moat** | {One sentence — what protects it from competition} |
+| **10-year outlook** | {One sentence — where it will likely be in 10 years} |
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE SCORECARD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Gate 1 — Circle of Competence   {★★★★☆}  {one-line note}
-Gate 2 — Good Business          {★★★★★}  {one-line note}
-Gate 3 — Moat                   {★★★★☆}  {one-line note}
-Gate 4 — Management             {★★★★☆}  {one-line note}
-Gate 5 — Margin of Safety       {★★☆☆☆}  {one-line note}
-Gate 6 — Decision Discipline    {Pass/Fail}
+## Gate Scorecard
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-KEY FINANCIALS  (FY{year})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Gate | Score | Note |
+|------|-------|------|
+| 1 — Circle of Competence | {★★★★☆} | {one-line note} |
+| 2 — Good Business | {★★★★★} | {one-line note} |
+| 3 — Moat | {★★★★☆} | {one-line note} |
+| 4 — Management | {★★★★☆} | {one-line note} |
+| 5 — Margin of Safety | {★★☆☆☆} | {one-line note} |
+| 6 — Decision Discipline | {Pass / Fail / Grey Zone} | {one-line note} |
 
-Current Price      ${price}        P/E (TTM)     {x}x
-Market Cap         ${cap}          FCF Yield     {%}%
-Revenue            ${rev}          Gross Margin  {%}%
-Net Income         ${ni}           Net Margin    {%}%
-Free Cash Flow     ${fcf}          ROE           {%}%
+---
 
-Data sources: {source 1}, {source 2} · Verified: financial_rigor.py
+## Key Financials (FY{year})
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VALUATION RANGE  (Three-Scenario Model)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Metric | Value | Metric | Value |
+|--------|-------|--------|-------|
+| Current Price | ${price} | P/E (TTM) | {x}x |
+| Market Cap | ${cap} | FCF Yield | {%}% |
+| Revenue | ${rev} | Gross Margin | {%}% |
+| Net Income | ${ni} | Net Margin | {%}% |
+| Free Cash Flow | ${fcf} | ROE | {%}% |
 
-  Bull case   ${bull}    (assumes {bull growth}% growth · {bull PE}x P/E)
-  Base case   ${base}    (assumes {base growth}% growth · {base PE}x P/E)
-  Bear case   ${bear}    (assumes {bear growth}% growth · {bear PE}x P/E)
+*Data verified: financial_rigor.py · Sources: {source1}, {source2}*
 
-  Current price: ${price}
-  vs. Base case: {+/-X% above/below intrinsic value}
+---
 
-  Margin of Safety: {NONE / THIN / ADEQUATE / STRONG}
-  Watch price (10% MoS on base):  ${watch}
-  Buy price  (25% MoS on base):   ${buy}
+## Valuation Range ({horizon}, three-scenario model)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOP RISKS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Scenario | Price Target | Assumptions |
+|----------|-------------|-------------|
+| 🟢 Bull | ${bull} | {bull growth}% growth · {bull PE}x P/E |
+| 🟡 Base | ${base} | {base growth}% growth · {base PE}x P/E |
+| 🔴 Bear | ${bear} | {bear growth}% growth · {bear PE}x P/E |
 
-1. {Risk one — one sentence, specific not generic}
-2. {Risk two — one sentence, specific not generic}
+**Current price: ${price} · Margin of Safety: {NONE/THIN/ADEQUATE/STRONG}**
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MIRROR TEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| | Price |
+|--|-------|
+| Watch price (10% MoS on base) | ${watch} |
+| Buy price (25% MoS on base) | ${buy} |
 
-"I am buying {company} at ${price}/share because:
- 1. The business is {description}, and I understand it;
- 2. Its moat is {moat}, and it is {widening/narrowing};
- 3. Management {assessment}, and is {trustworthy/not};
- 4. The price is {X}% of intrinsic value, {with/without} margin of safety;
- 5. Even if I'm wrong, downside is {manageable/not} because {reason}."
+---
 
-Mirror Test: ✅ PASS  /  ❌ FAIL  /  ⚠️ GREY ZONE
+## Top Risks
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  DISCLAIMER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. **{Risk name}:** {Risk one — specific, not generic}
+2. **{Risk name}:** {Risk two — specific, not generic}
 
-This report is produced by R-InvestIQ, a research and education tool
-built on the open-source AI-Berkshire framework (MIT License).
+---
 
-This is NOT investment advice. It is a structured research summary
-for educational purposes only. All data is sourced from public
-information and may contain errors or be out of date. Past performance
-of any company does not guarantee future results.
+## Mirror Test
 
-Do your own research. Consult a licensed financial advisor before
-making any investment decisions.
+> "I am buying {company} at ${price}/share because:
+> 1. The business is {description}, and I understand it;
+> 2. Its moat is {moat}, and it is {widening/narrowing};
+> 3. Management {assessment}, and is {trustworthy/not};
+> 4. The price is {X}% of intrinsic value, {with/without} margin of safety;
+> 5. Even if I'm wrong, downside is {manageable/not} because {reason}."
 
-R-InvestIQ · Built by Nehal Varma Pericherla · Relanto · {date}
-AI-Berkshire base by xbtlin · MIT License
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Mirror Test: {✅ PASS / ❌ FAIL / ⚠️ GREY ZONE}**
+
+---
+
+## ⚠️ Disclaimer
+
+This report is produced by **R-InvestIQ**, a research and education tool built on the open-source AI-Berkshire framework (MIT License).
+
+**This is NOT investment advice.** It is a structured research summary for educational purposes only. All data is sourced from public information and may contain errors or be out of date. Past performance of any company does not guarantee future results.
+
+Do your own research. Consult a licensed financial advisor before making any investment decisions.
+
+*R-InvestIQ · Nehal Varma Pericherla · Relanto · {date}*
+*AI-Berkshire base by xbtlin · MIT License*
 ```
 
 ### Step 5: Save the Report
@@ -177,3 +175,4 @@ After saving, display:
 - **Price discipline is absolute** — a great business at the wrong price is always WATCH, never PASS.
 - **Disclaimer is mandatory** — never omit it. Research and education only.
 - **Cite your sources** — every financial figure needs a source and date inline.
+- **Use proper Markdown** — always use ## headers, tables, and **bold**. Never use ━━━ border characters — they do not render in GitHub or browser previews.

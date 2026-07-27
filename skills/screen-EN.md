@@ -85,81 +85,92 @@ Once the checklist is complete, immediately run the verdict report:
 | 🟡 WATCH | Gates 1–4 strong BUT Gate 5 ★★★☆☆ or below |
 | 🔴 AVOID | Any of Gates 1–4 is ★★☆☆☆ or below OR hard veto triggered |
 
-4. Generate the one-page verdict in this exact format:
+4. Generate the one-page verdict in this exact Markdown format:
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-R-InvestIQ VERDICT REPORT
-{Company} ({Ticker}) · {Exchange} · {Date}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```markdown
+# R-InvestIQ Verdict Report
 
-VERDICT:  🟢 PASS  /  🟡 WATCH  /  🔴 AVOID
+## {Company} ({Ticker}) · {Exchange} · {Date}
 
-ONE-LINE REASON:
-{Single sentence — synthesis not just data. Explain the SO WHAT.}
+---
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-BUSINESS SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Verdict: {🟢 PASS / 🟡 WATCH / 🔴 AVOID}
 
-What it does:     {One sentence — how the company makes money}
-Moat:             {One sentence — what protects it from competition}
-10-year outlook:  {One sentence — where it will likely be in 10 years}
+**One-line reason:** {Single sentence — synthesis not just data. Explain the SO WHAT.}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE SCORECARD
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Gate 1 — Circle of Competence   {★★★★☆}  {one-line note}
-Gate 2 — Good Business          {★★★★★}  {one-line note}
-Gate 3 — Moat                   {★★★★☆}  {one-line note}
-Gate 4 — Management             {★★★★☆}  {one-line note}
-Gate 5 — Margin of Safety       {★★☆☆☆}  {one-line note}
-Gate 6 — Decision Discipline    {Pass / Fail / Grey Zone}
+## Business Summary
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-KEY FINANCIALS  (FY{year})
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| | |
+|---|---|
+| **What it does** | {One sentence — how the company makes money} |
+| **Moat** | {One sentence — what protects it from competition} |
+| **10-year outlook** | {One sentence — where it will likely be in 10 years} |
 
-Current Price    ${price}      P/E (TTM)     {x}x
-Market Cap       ${cap}        FCF Yield     {%}%
-Revenue          ${rev}        Gross Margin  {%}%
-Net Income       ${ni}         Net Margin    {%}%
-Free Cash Flow   ${fcf}        ROE           {%}%
+---
 
-Data verified: financial_rigor.py · Sources: {source1}, {source2}
+## Gate Scorecard
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VALUATION RANGE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Gate | Score | Note |
+|------|-------|------|
+| 1 — Circle of Competence | {★★★★☆} | {one-line note} |
+| 2 — Good Business | {★★★★★} | {one-line note} |
+| 3 — Moat | {★★★★☆} | {one-line note} |
+| 4 — Management | {★★★★☆} | {one-line note} |
+| 5 — Margin of Safety | {★★☆☆☆} | {one-line note} |
+| 6 — Decision Discipline | {Pass / Fail / Grey Zone} | {one-line note} |
 
-  Bull  ${bull}  ({bull growth}% growth · {bull PE}x P/E)
-  Base  ${base}  ({base growth}% growth · {base PE}x P/E)
-  Bear  ${bear}  ({bear growth}% growth · {bear PE}x P/E)
+---
 
-  Current: ${price} · Margin of Safety: {NONE/THIN/ADEQUATE/STRONG}
-  Watch price: ${watch}  |  Buy price: ${buy}
+## Key Financials (FY{year})
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOP RISKS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Metric | Value | Metric | Value |
+|--------|-------|--------|-------|
+| Current Price | ${price} | P/E (TTM) | {x}x |
+| Market Cap | ${cap} | FCF Yield | {%}% |
+| Revenue | ${rev} | Gross Margin | {%}% |
+| Net Income | ${ni} | Net Margin | {%}% |
+| Free Cash Flow | ${fcf} | ROE | {%}% |
 
-1. {Risk one — specific, not generic}
-2. {Risk two — specific, not generic}
+*Data verified: financial_rigor.py · Sources: {source1}, {source2}*
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  DISCLAIMER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-This report is produced by R-InvestIQ, a research and education tool
-built on the open-source AI-Berkshire framework (MIT License).
+## Valuation Range ({horizon}, three-scenario model)
 
-NOT investment advice. For educational purposes only. All data from
-public sources and may contain errors. Do your own research.
+| Scenario | Price Target | Assumptions |
+|----------|-------------|-------------|
+| 🟢 Bull | ${bull} | {bull growth}% growth · {bull PE}x P/E |
+| 🟡 Base | ${base} | {base growth}% growth · {base PE}x P/E |
+| 🔴 Bear | ${bear} | {bear growth}% growth · {bear PE}x P/E |
 
-R-InvestIQ · Nehal Varma Pericherla · Relanto · {date}
-AI-Berkshire base by xbtlin · MIT License
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Current price: ${price} · Margin of Safety: {NONE/THIN/ADEQUATE/STRONG}**
+
+| | Price |
+|--|-------|
+| Watch price (10% MoS on base) | ${watch} |
+| Buy price (25% MoS on base) | ${buy} |
+
+---
+
+## Top Risks
+
+1. **{Risk name}:** {Risk one — specific, not generic}
+2. **{Risk name}:** {Risk two — specific, not generic}
+
+---
+
+## ⚠️ Disclaimer
+
+This report is produced by **R-InvestIQ**, a research and education tool built on the open-source AI-Berkshire framework (MIT License).
+
+**This is NOT investment advice.** It is a structured research summary for educational purposes only. All data is sourced from public information and may contain errors or be out of date. Past performance of any company does not guarantee future results.
+
+Do your own research. Consult a licensed financial advisor before making any investment decisions.
+
+*R-InvestIQ · Nehal Varma Pericherla · Relanto · {date}*
+*AI-Berkshire base by xbtlin · MIT License*
 ```
 
 5. Save the verdict to `reports/{Company}/{Company}-verdict-{YYYYMMDD}.md`
@@ -178,11 +189,10 @@ Print the complete one-page verdict to the terminal.
 
 Then show:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Reports saved:
   Checklist → reports/{Company}/{Company}-checklist-{date}.md
   Verdict   → reports/{Company}/{Company}-verdict-{date}.md
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Run /screen-EN {next company} to screen another company.
 ```
 
@@ -195,3 +205,4 @@ Run /screen-EN {next company} to screen another company.
 - **Synthesis not aggregation** — the one-line reason must say the SO WHAT, not just report a number
 - **One page maximum** — if it doesn't fit on one page, cut it
 - **Stop on failure** — if checklist fails, do not guess or estimate. Report the error.
+- **Use proper Markdown** — always use ## headers, tables, and **bold**. Never use ━━━ border characters — they do not render in GitHub or browser previews.
