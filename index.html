@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R-InvestIQ — AI Value Investing Research</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    color: #1a1a1a;
+    line-height: 1.6;
+    background: #fafafa;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #eee;
+  }
+  header h1 { font-size: 2.2em; margin-bottom: 4px; }
+  header p { color: #666; margin: 4px 0; }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .tab {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .tab:hover { border-color: #999; }
+  .tab.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+  .report {
+    display: none;
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .report.active { display: block; }
+  .report h1 { font-size: 1.8em; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+  .report h2 { font-size: 1.3em; margin-top: 28px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+  .report table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+  }
+  .report th, .report td {
+    border: 1px solid #e0e0e0;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  .report th { background: #f7f7f7; font-weight: 600; }
+  .report tr:nth-child(even) { background: #fafafa; }
+  .report hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+  .report blockquote {
+    border-left: 3px solid #ccc;
+    margin: 16px 0;
+    padding: 8px 16px;
+    color: #555;
+    font-style: italic;
+  }
+  .loading { text-align: center; color: #999; padding: 40px; }
+  footer { text-align: center; margin-top: 40px; color: #999; font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏦 R-InvestIQ</h1>
+  <p>AI-Powered Value Investing Research</p>
+  <p style="font-size:0.85em;">Built by Nehal Varma Pericherla · Relanto · Buffett 6-Gate Framework</p>
+</header>
+
+<div class="tabs" id="tabs"></div>
+<div id="reports"></div>
+
+<footer>
+  Research and education only. Not investment advice.<br>
+  Built on the open-source AI-Berkshire framework (MIT License)
+</footer>
+
+<script>
+const companies = [
+  { name: "Apple", ticker: "AAPL", verdict: "🟡", file: "reports/Apple/Apple-verdict-20260727.md" },
+  { name: "Google", ticker: "GOOGL", verdict: "🟡", file: "reports/Google/Google-verdict-20260709.md" },
+  { name: "Coca-Cola", ticker: "KO", verdict: "🟡", file: "reports/Coca-Cola/Coca-Cola-verdict-20260717.md" },
+  { name: "Intel", ticker: "INTC", verdict: "🔴", file: "reports/Intel/Intel-verdict-20260727.md" }
+];
+
+const tabsEl = document.getElementById("tabs");
+const reportsEl = document.getElementById("reports");
+
+companies.forEach((c, i) => {
+  const tab = document.createElement("div");
+  tab.className = "tab" + (i === 0 ? " active" : "");
+  tab.textContent = `${c.verdict} ${c.name}`;
+  tab.onclick = () => selectTab(i);
+  tabsEl.appendChild(tab);
+
+  const div = document.createElement("div");
+  div.className = "report" + (i === 0 ? " active" : "");
+  div.id = `report-${i}`;
+  div.innerHTML = '<div class="loading">Loading report...</div>';
+  reportsEl.appendChild(div);
+
+  fetch(c.file)
+    .then(res => {
+      if (!res.ok) throw new Error("Report not found");
+      return res.text();
+    })
+    .then(md => {
+      div.innerHTML = marked.parse(md);
+    })
+    .catch(err => {
+      div.innerHTML = `<div class="loading">Could not load report: ${c.file}</div>`;
+    });
+});
+
+function selectTab(index) {
+  document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", i === index));
+  document.querySelectorAll(".report").forEach((r, i) => r.classList.toggle("active", i === index));
+}
+</script>
+
+</body>
+</html>

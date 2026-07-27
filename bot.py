@@ -1,5 +1,8 @@
 import os
 import glob
+import re
+import asyncio
+from datetime import datetime
 from typing import Optional
 from dotenv import load_dotenv
 import anthropic
@@ -24,72 +27,74 @@ You analyze companies using Warren Buffett's 6-gate framework:
 6. Decision Discipline — Am I buying for the right reasons?
 
 Traffic light verdict rules (apply strictly):
-🟢 PASS  — Gates 1–4 all strong AND Gate 5 shows adequate margin of safety (price ≤ 70% of base case)
-🟡 WATCH — Gates 1–4 strong BUT Gate 5 weak (good business, wrong price)
-🔴 AVOID — Any of Gates 1–4 failed OR hard veto triggered (debt crisis, fraud, no moat)
+🟢 PASS  — Gates 1-4 all strong AND Gate 5 adequate margin of safety (price at least 25% below base case)
+🟡 WATCH — Gates 1-4 strong BUT Gate 5 weak (good business, wrong price)
+🔴 AVOID — Any of Gates 1-4 failed OR hard veto triggered
 
 Always give a definitive verdict. Never hedge. Price discipline is absolute.
 This is for research and education only. Not investment advice."""
 
 
+def save_report(company: str, text: str) -> str:
+    company_clean = company.strip().title()
+    folder = f"reports/{company_clean}"
+    os.makedirs(folder, exist_ok=True)
+    date = datetime.now().strftime("%Y%m%d")
+    path = f"{folder}/{company_clean}-verdict-{date}.md"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+    return path
+
+
 def find_existing_report(company: str) -> Optional[str]:
     company_clean = company.strip().title()
     ticker = company.strip().upper()
-
-    search_names = [company_clean, ticker, company.strip()]
-    for name in search_names:
-        pattern = f"reports/{name}/{name}-verdict-*.md"
-        files = glob.glob(pattern)
+    for name in [company_clean, ticker, company.strip()]:
+        files = glob.glob(f"reports/{name}/{name}-verdict-*.md")
         if files:
-            latest = sorted(files)[-1]
-            with open(latest, "r", encoding="utf-8") as f:
+            with open(sorted(files)[-1], "r", encoding="utf-8") as f:
                 return f.read()
     return None
 
 
-def format_for_telegram(text: str) -> str:
-    lines = text.split("\n")
-    result = []
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("|") and all(
-            c in "-| " for c in stripped.replace("|", "")
-        ):
-            continue
-        if stripped.startswith("|"):
-            cells = [c.strip() for c in stripped.split("|") if c.strip()]
-            if cells:
-                result.append("  " + "  |  ".join(cells))
-        else:
-            result.append(line)
-    return "\n".join(result)
+async def send_report(update: Update, text: str):
+    """Send report in chunks, guaranteed."""
+    chunk_size = 4000
+    chunks = [text[i: i + chunk_size] for i in range(0, len(text), chunk_size)]
+    print(f"[DEBUG] Sending {len(chunks)} chunk(s), total {len(text)} chars")
+    for i, chunk in enumerate(chunks):
+        try:
+            await update.message.reply_text(chunk)
+            print(f"[DEBUG] Sent chunk {i + 1}/{len(chunks)}")
+            await asyncio.sleep(1)
+        except Exception as e:
+            print(f"[DEBUG] Error on chunk {i + 1}: {e}")
+            await update.message.reply_text(f"[Error on part {i + 1}: {str(e)}]")
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = (
-        "🏦 *R-InvestIQ* — AI Value Investing Research\n"
+        "🏦 R-InvestIQ — AI Value Investing Research\n"
         "Built by Nehal Varma Pericherla · Relanto\n\n"
         "Type any company name or ticker to get a Buffett-style verdict:\n\n"
-        "  • Apple  •  MSFT  •  Coca-Cola  •  TSLA\n\n"
+        "  Apple · MSFT · Coca-Cola · TSLA\n\n"
         "Already screened:\n"
         "  🟡 Apple (AAPL)\n"
         "  🟡 Google (GOOGL)\n"
         "  🟡 Coca-Cola (KO)\n"
         "  🔴 Intel (INTC)\n\n"
-        "_Research and education only. Not investment advice._"
+        "Research and education only. Not investment advice."
     )
-    await update.message.reply_text(msg, parse_mode="Markdown")
+    await update.message.reply_text(msg)
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = (
-        "Just type a company name or ticker:\n\n"
+    await update.message.reply_text(
+        "Type any company name or ticker:\n\n"
         "Apple · GOOGL · Microsoft · TSLA · Berkshire\n\n"
         "I'll run a full Buffett-style analysis and return a "
-        "🟢 PASS / 🟡 WATCH / 🔴 AVOID verdict.\n\n"
-        "Takes about 1–2 minutes for a new company."
+        "PASS / WATCH / AVOID verdict. Takes 1-2 minutes."
     )
-    await update.message.reply_text(msg)
 
 
 async def screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -99,55 +104,84 @@ async def screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     status = await update.message.reply_text(
-        f"🔍 Screening *{company}*...\nThis takes 1–2 minutes.",
-        parse_mode="Markdown",
+        f"Screening {company}... This takes 1-2 minutes."
     )
 
+    # Check for existing saved report
     existing = find_existing_report(company)
     if existing:
-        await status.edit_text(
-            f"✅ Found existing report for *{company}*", parse_mode="Markdown"
+        clean = re.sub(r"<[^>]+>", "", existing)
+        await status.edit_text(f"Found existing report for {company}")
+        await send_report(update, clean)
+        return
+
+    # Call Claude API
+    try:
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=2000,
+            system=SYSTEM_PROMPT,
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        f"Screen {company} using the Buffett 6-gate framework.\n\n"
+                        "Write the verdict in plain text only. No markdown, no HTML, no tables.\n"
+                        "Keep it under 3000 characters total.\n"
+                        "Use this exact structure:\n\n"
+                        "🏦 [COMPANY] ([TICKER]) · [EXCHANGE]\n\n"
+                        "VERDICT: [🟢 PASS / 🟡 WATCH / 🔴 AVOID]\n"
+                        "Reason: [one sentence — the SO WHAT]\n\n"
+                        "── BUSINESS ──\n"
+                        "What it does: [one sentence]\n"
+                        "Moat: [one sentence]\n"
+                        "10-yr outlook: [one sentence]\n\n"
+                        "── GATE SCORECARD ──\n"
+                        "1 Circle of Competence  [★★★★☆]  [note]\n"
+                        "2 Good Business         [★★★★★]  [note]\n"
+                        "3 Moat                  [★★★★☆]  [note]\n"
+                        "4 Management            [★★★★☆]  [note]\n"
+                        "5 Margin of Safety      [★★☆☆☆]  [note]\n"
+                        "6 Decision Discipline   [Pass/Watch/Avoid]\n\n"
+                        "── KEY FINANCIALS ──\n"
+                        "Price: $X  |  P/E: Xx  |  Market Cap: $XB\n"
+                        "Revenue: $XB  |  FCF: $XB  |  Gross Margin: X%\n"
+                        "Net Income: $XB  |  ROE: X%\n\n"
+                        "── VALUATION ──\n"
+                        "Bull $X  (X% growth · Xx P/E)\n"
+                        "Base $X  (X% growth · Xx P/E)\n"
+                        "Bear $X  (X% growth · Xx P/E)\n"
+                        "Current $X · MoS: [NONE/THIN/ADEQUATE/STRONG]\n"
+                        "Watch price: $X  |  Buy price: $X\n\n"
+                        "── TOP RISKS ──\n"
+                        "1. [specific risk]\n"
+                        "2. [specific risk]\n\n"
+                        "⚠️ R-InvestIQ · Nehal Varma Pericherla · Relanto · Not investment advice."
+                    ),
+                }
+            ],
         )
-        text = format_for_telegram(existing)
-    else:
+
+        print(f"[DEBUG] Stop reason: {response.stop_reason}")
+        print(f"[DEBUG] Raw content: {response.content}")
         try:
-            response = client.messages.create(
-                model="claude-sonnet-5",
-                max_tokens=2000,
-                system=SYSTEM_PROMPT,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": (
-                            f"Screen {company} using the Buffett 6-gate framework.\n\n"
-                            "Give me a one-page verdict with:\n"
-                            "- Verdict: 🟢 PASS / 🟡 WATCH / 🔴 AVOID\n"
-                            "- One-line reason (the SO WHAT, not just data)\n"
-                            "- Business summary: what it does, moat, 10-year outlook\n"
-                            "- Gate scorecard: all 6 gates with ★ ratings (1–5)\n"
-                            "- Key financials: price, P/E, market cap, revenue, FCF, gross margin, ROE\n"
-                            "- Valuation range: Bull / Base / Bear with growth assumptions\n"
-                            "- Watch price (10% MoS on base) and Buy price (25% MoS on base)\n"
-                            "- Top 2 specific risks\n\n"
-                            "Use real current market data. Be specific. No hedging.\n\n"
-                            "End with:\n"
-                            "⚠️ R-InvestIQ by Nehal Varma Pericherla · Relanto · Not investment advice."
-                        ),
-                    }
-                ],
-            )
             text = response.content[0].text
-            await status.edit_text(
-                f"✅ Done screening *{company}*", parse_mode="Markdown"
-            )
-        except Exception as e:
-            await status.edit_text(f"❌ Error: {str(e)}")
+        except Exception as ex:
+            print(f"[DEBUG] Direct access failed: {ex}")
+            text = ""
+        print(f"[DEBUG] Response: {len(text)} chars")
+
+        if not text.strip():
+            await status.edit_text("Error: Got empty response from AI.")
             return
 
-    # Telegram limit is 4096 chars per message
-    chunk_size = 4000
-    for i in range(0, len(text), chunk_size):
-        await update.message.reply_text(text[i : i + chunk_size])
+        saved_path = save_report(company, text)
+        await status.edit_text(f"Done — {company}\nSaved to {saved_path}")
+        await send_report(update, text)
+
+    except Exception as e:
+        print(f"[DEBUG] Error: {e}")
+        await status.edit_text(f"Error: {str(e)}")
 
 
 def main():
