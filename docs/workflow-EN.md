@@ -98,6 +98,7 @@ git push origin main
 | Apple (AAPL) | 2026-07-01 | 🟡 WATCH | Great business, no margin of safety at $287 |
 | Google (GOOGL) | 2026-07-09 | 🟡 WATCH | Great business, thin margin of safety at $355 |
 | Coca-Cola (KO) | 2026-07-17 | 🟡 WATCH | Wonderful business, razor-thin margin of safety at $81 |
+| Intel (INTC) | 2026-07-27 | 🔴 AVOID | Negative FCF, eroded moat, no stable earnings base — automatic AVOID on Gates 1–4 |
 
 ---
 

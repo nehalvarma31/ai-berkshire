@@ -61,6 +61,17 @@ Copy the skill file to your Claude commands folder and invoke it:
 
 ---
 
+### R-InvestIQ — One-Command Screening (Nehal's additions)
+
+| Skill | File | What It Does | When to Use |
+|-------|------|-------------|-------------|
+| **Screen (EN)** | `screen-EN.md` | Chains checklist + verdict into a single command — takes a company name and outputs a one-page Pass/Watch/Avoid verdict | Fastest way to screen any company end-to-end |
+| **Verdict Report (EN)** | `verdict-report-EN.md` | Condenses an existing checklist into R-InvestIQ's signature one-page verdict format | When a checklist already exists and you just need the summary |
+
+R-InvestIQ also ships a **Telegram bot** (`bot.py`) that runs the same 6-gate logic live in chat, and a **static website** (`index.html`, published via GitHub Pages) that displays all saved verdict reports.
+
+---
+
 ### Tier 5 — Content & Communication
 
 | Skill | File | What It Does | When to Use |
