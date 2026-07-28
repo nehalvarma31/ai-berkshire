@@ -34,15 +34,100 @@ Traffic light verdict rules (apply strictly):
 Always give a definitive verdict. Never hedge. Price discipline is absolute.
 This is for research and education only. Not investment advice."""
 
+REPORT_PROMPT_TEMPLATE = """Screen {company} using the Buffett 6-gate framework.
 
-def save_report(company: str, text: str) -> str:
+Write the verdict as clean Markdown, following this EXACT structure and style (headers, tables, bold) — this file gets rendered directly on a website, so the Markdown must be well-formed:
+
+# R-InvestIQ Verdict Report
+
+## {{Company Name}} ({{Ticker}}) · {{Exchange}} · {date}
+
+---
+
+## Verdict: {{🟢 PASS / 🟡 WATCH / 🔴 AVOID}}
+
+**One-line reason:** {{single sentence — the SO WHAT, not just data}}
+
+---
+
+## Business Summary
+
+| | |
+|---|---|
+| **What it does** | {{one sentence}} |
+| **Moat** | {{one sentence}} |
+| **10-year outlook** | {{one sentence}} |
+
+---
+
+## Gate Scorecard
+
+| Gate | Score | Note |
+|------|-------|------|
+| 1 — Circle of Competence | {{★★★★☆}} | {{note}} |
+| 2 — Good Business | {{★★★★★}} | {{note}} |
+| 3 — Moat | {{★★★★☆}} | {{note}} |
+| 4 — Management | {{★★★★☆}} | {{note}} |
+| 5 — Margin of Safety | {{★★☆☆☆}} | {{note}} |
+| 6 — Decision Discipline | {{Pass / Fail / Grey Zone}} | {{note}} |
+
+---
+
+## Key Financials
+
+| Metric | Value | Metric | Value |
+|--------|-------|--------|-------|
+| Current Price | ${{price}} | P/E (TTM) | {{x}}x |
+| Market Cap | ${{cap}} | FCF Yield | {{%}}% |
+| Revenue | ${{rev}} | Gross Margin | {{%}}% |
+| Net Income | ${{ni}} | ROE | {{%}}% |
+
+---
+
+## Valuation Range (three-scenario model)
+
+| Scenario | Price Target | Assumptions |
+|----------|-------------|-------------|
+| 🟢 Bull | ${{bull}} | {{x}}% growth · {{x}}x P/E |
+| 🟡 Base | ${{base}} | {{x}}% growth · {{x}}x P/E |
+| 🔴 Bear | ${{bear}} | {{x}}% growth · {{x}}x P/E |
+
+**Current price: ${{price}} · Margin of Safety: {{NONE/THIN/ADEQUATE/STRONG}}**
+
+| | Price |
+|--|-------|
+| Watch price | ${{watch}} |
+| Buy price | ${{buy}} |
+
+---
+
+## Top Risks
+
+1. **{{Risk name}}:** {{specific risk}}
+2. **{{Risk name}}:** {{specific risk}}
+
+---
+
+## ⚠️ Disclaimer
+
+This report is produced by **R-InvestIQ**, a research and education tool built on the open-source AI-Berkshire framework (MIT License).
+
+**This is NOT investment advice.** All data is sourced from public information and may contain errors or be out of date.
+
+*R-InvestIQ · Nehal Varma Pericherla · Relanto · {date}*
+*AI-Berkshire base by xbtlin · MIT License*
+
+Use real, plausible current market data. Be specific, not generic. Fill in every {{placeholder}} — output ONLY the final Markdown, no preamble, no commentary before or after."""
+
+
+def save_report(company: str, markdown_text: str) -> str:
     company_clean = company.strip().title()
     folder = f"reports/{company_clean}"
     os.makedirs(folder, exist_ok=True)
     date = datetime.now().strftime("%Y%m%d")
     path = f"{folder}/{company_clean}-verdict-{date}.md"
     with open(path, "w", encoding="utf-8") as f:
-        f.write(text)
+        f.write(markdown_text)
     return path
 
 
@@ -55,6 +140,48 @@ def find_existing_report(company: str) -> Optional[str]:
             with open(sorted(files)[-1], "r", encoding="utf-8") as f:
                 return f.read()
     return None
+
+
+def markdown_to_telegram_text(md: str) -> str:
+    """Convert full Markdown into clean, readable plain text for Telegram chat."""
+    lines = md.split("\n")
+    out = []
+    for raw in lines:
+        line = raw.rstrip()
+        stripped = line.strip()
+
+        # Skip table separator rows like |---|---|
+        if stripped.startswith("|") and set(stripped.replace("|", "").strip()) <= set("- "):
+            continue
+
+        # Table rows -> "Label: Value  |  Label: Value"
+        if stripped.startswith("|"):
+            cells = [c.strip() for c in stripped.split("|") if c.strip()]
+            if cells:
+                out.append("  " + "   ".join(cells))
+            continue
+
+        # Headers
+        if stripped.startswith("# "):
+            out.append(stripped[2:].upper())
+            continue
+        if stripped.startswith("## "):
+            out.append("\n" + stripped[3:].upper())
+            continue
+
+        # Horizontal rules
+        if stripped == "---":
+            continue
+
+        # Bold / italics -> strip markers, keep text
+        clean = re.sub(r"\*\*(.+?)\*\*", r"\1", line)
+        clean = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"\1", clean)
+        out.append(clean)
+
+    # Collapse 3+ blank lines into 1
+    text = "\n".join(out)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 async def send_report(update: Update, text: str):
@@ -110,13 +237,13 @@ async def screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Check for existing saved report
     existing = find_existing_report(company)
     if existing:
-        clean = re.sub(r"<[^>]+>", "", existing)
         await status.edit_text(f"Found existing report for {company}")
-        await send_report(update, clean)
+        await send_report(update, markdown_to_telegram_text(existing))
         return
 
     # Call Claude API
     try:
+        date_str = datetime.now().strftime("%Y-%m-%d")
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=2000,
@@ -124,60 +251,26 @@ async def screen(update: Update, context: ContextTypes.DEFAULT_TYPE):
             messages=[
                 {
                     "role": "user",
-                    "content": (
-                        f"Screen {company} using the Buffett 6-gate framework.\n\n"
-                        "Write the verdict in plain text only. No markdown, no HTML, no tables.\n"
-                        "Keep it under 3000 characters total.\n"
-                        "Use this exact structure:\n\n"
-                        "🏦 [COMPANY] ([TICKER]) · [EXCHANGE]\n\n"
-                        "VERDICT: [🟢 PASS / 🟡 WATCH / 🔴 AVOID]\n"
-                        "Reason: [one sentence — the SO WHAT]\n\n"
-                        "── BUSINESS ──\n"
-                        "What it does: [one sentence]\n"
-                        "Moat: [one sentence]\n"
-                        "10-yr outlook: [one sentence]\n\n"
-                        "── GATE SCORECARD ──\n"
-                        "1 Circle of Competence  [★★★★☆]  [note]\n"
-                        "2 Good Business         [★★★★★]  [note]\n"
-                        "3 Moat                  [★★★★☆]  [note]\n"
-                        "4 Management            [★★★★☆]  [note]\n"
-                        "5 Margin of Safety      [★★☆☆☆]  [note]\n"
-                        "6 Decision Discipline   [Pass/Watch/Avoid]\n\n"
-                        "── KEY FINANCIALS ──\n"
-                        "Price: $X  |  P/E: Xx  |  Market Cap: $XB\n"
-                        "Revenue: $XB  |  FCF: $XB  |  Gross Margin: X%\n"
-                        "Net Income: $XB  |  ROE: X%\n\n"
-                        "── VALUATION ──\n"
-                        "Bull $X  (X% growth · Xx P/E)\n"
-                        "Base $X  (X% growth · Xx P/E)\n"
-                        "Bear $X  (X% growth · Xx P/E)\n"
-                        "Current $X · MoS: [NONE/THIN/ADEQUATE/STRONG]\n"
-                        "Watch price: $X  |  Buy price: $X\n\n"
-                        "── TOP RISKS ──\n"
-                        "1. [specific risk]\n"
-                        "2. [specific risk]\n\n"
-                        "⚠️ R-InvestIQ · Nehal Varma Pericherla · Relanto · Not investment advice."
-                    ),
+                    "content": REPORT_PROMPT_TEMPLATE.format(company=company, date=date_str),
                 }
             ],
         )
 
         print(f"[DEBUG] Stop reason: {response.stop_reason}")
-        print(f"[DEBUG] Raw content: {response.content}")
         try:
-            text = response.content[0].text
+            markdown_text = response.content[0].text
         except Exception as ex:
             print(f"[DEBUG] Direct access failed: {ex}")
-            text = ""
-        print(f"[DEBUG] Response: {len(text)} chars")
+            markdown_text = ""
+        print(f"[DEBUG] Response: {len(markdown_text)} chars")
 
-        if not text.strip():
+        if not markdown_text.strip():
             await status.edit_text("Error: Got empty response from AI.")
             return
 
-        saved_path = save_report(company, text)
+        saved_path = save_report(company, markdown_text)
         await status.edit_text(f"Done — {company}\nSaved to {saved_path}")
-        await send_report(update, text)
+        await send_report(update, markdown_to_telegram_text(markdown_text))
 
     except Exception as e:
         print(f"[DEBUG] Error: {e}")
