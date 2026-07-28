@@ -9,80 +9,97 @@
   * { box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    max-width: 900px;
+    max-width: 920px;
     margin: 0 auto;
-    padding: 40px 20px;
-    color: #1a1a1a;
+    padding: 48px 20px;
+    color: #E8ECFB;
     line-height: 1.6;
-    background: #fafafa;
+    background: #071339;
+    background-image: radial-gradient(circle at 20% 0%, rgba(248,139,38,0.12), transparent 45%);
   }
   header {
     text-align: center;
     margin-bottom: 40px;
-    padding-bottom: 24px;
-    border-bottom: 2px solid #eee;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #262E5C;
   }
-  header h1 { font-size: 2.2em; margin-bottom: 4px; }
-  header p { color: #666; margin: 4px 0; }
+  header h1 {
+    font-family: Georgia, "Cambria", serif;
+    font-size: 2.3em;
+    margin-bottom: 6px;
+    color: #FFFFFF;
+  }
+  header p { color: #9AA6C4; margin: 4px 0; }
+  header p.tagline { color: #C9CFE8; font-size: 0.95em; }
   .tabs {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 32px;
+    margin-bottom: 36px;
   }
   .tab {
-    padding: 10px 20px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    background: white;
+    padding: 10px 22px;
+    border-radius: 24px;
+    border: 1px solid #262E5C;
+    background: #10153A;
+    color: #C9CFE8;
     cursor: pointer;
     font-size: 0.95em;
     font-weight: 500;
     transition: all 0.15s;
   }
-  .tab:hover { border-color: #999; }
-  .tab.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+  .tab:hover { border-color: #F88B26; color: #FFFFFF; }
+  .tab.active {
+    background: #F88B26;
+    color: #FFFFFF;
+    border-color: transparent;
+    font-weight: 700;
+  }
   .report {
     display: none;
-    background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: #10153A;
+    border: 1px solid #1E2550;
+    border-radius: 14px;
+    padding: 36px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
   }
   .report.active { display: block; }
-  .report h1 { font-size: 1.8em; border-bottom: 1px solid #eee; padding-bottom: 12px; }
-  .report h2 { font-size: 1.3em; margin-top: 28px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+  .report h1 { color: #FFFFFF; font-family: Georgia, "Cambria", serif; font-size: 1.8em; border-bottom: 1px solid #262E5C; padding-bottom: 14px; }
+  .report h2 { color: #F88B26; font-size: 1.2em; margin-top: 30px; border-bottom: 1px solid #262E5C; padding-bottom: 8px; }
+  .report strong { color: #FFFFFF; }
   .report table {
     width: 100%;
     border-collapse: collapse;
     margin: 16px 0;
   }
   .report th, .report td {
-    border: 1px solid #e0e0e0;
+    border: 1px solid #262E5C;
     padding: 10px 14px;
     text-align: left;
+    color: #DCE1F5;
   }
-  .report th { background: #f7f7f7; font-weight: 600; }
-  .report tr:nth-child(even) { background: #fafafa; }
-  .report hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+  .report th { background: #171D45; color: #F88B26; font-weight: 600; }
+  .report tr:nth-child(even) { background: #0D1130; }
+  .report hr { border: none; border-top: 1px solid #262E5C; margin: 26px 0; }
   .report blockquote {
-    border-left: 3px solid #ccc;
+    border-left: 3px solid #F88B26;
     margin: 16px 0;
     padding: 8px 16px;
-    color: #555;
+    color: #B8C0E0;
     font-style: italic;
+    background: #0D1130;
   }
-  .loading { text-align: center; color: #999; padding: 40px; }
-  footer { text-align: center; margin-top: 40px; color: #999; font-size: 0.9em; }
+  .report a { color: #F88B26; }
+  .loading { text-align: center; color: #6B7494; padding: 40px; }
+  footer { text-align: center; margin-top: 40px; color: #6B7494; font-size: 0.9em; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🏦 R-InvestIQ</h1>
-  <p>AI-Powered Value Investing Research</p>
+  <h1>R-InvestIQ</h1>
+  <p class="tagline">AI-Powered Value Investing Research</p>
   <p style="font-size:0.85em;">Built by Nehal Varma Pericherla · Relanto · Buffett 6-Gate Framework</p>
 </header>
 
@@ -105,11 +122,17 @@ const companies = [
 const tabsEl = document.getElementById("tabs");
 const reportsEl = document.getElementById("reports");
 
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 companies.forEach((c, i) => {
+  c.slug = slugify(c.name);
+
   const tab = document.createElement("div");
   tab.className = "tab" + (i === 0 ? " active" : "");
   tab.textContent = `${c.verdict} ${c.name}`;
-  tab.onclick = () => selectTab(i);
+  tab.onclick = () => selectTab(i, true);
   tabsEl.appendChild(tab);
 
   const div = document.createElement("div");
@@ -131,10 +154,22 @@ companies.forEach((c, i) => {
     });
 });
 
-function selectTab(index) {
+function selectTab(index, updateHash) {
   document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", i === index));
   document.querySelectorAll(".report").forEach((r, i) => r.classList.toggle("active", i === index));
+  if (updateHash) {
+    history.replaceState(null, "", "#" + companies[index].slug);
+  }
 }
+
+function selectFromHash() {
+  const hash = location.hash.replace("#", "");
+  const index = companies.findIndex(c => c.slug === hash);
+  if (index >= 0) selectTab(index, false);
+}
+
+window.addEventListener("hashchange", selectFromHash);
+selectFromHash();
 </script>
 
 </body>
