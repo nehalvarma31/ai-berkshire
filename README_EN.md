@@ -14,6 +14,20 @@ One person + Claude Code / Codex = an entire investment research team.
 
 ---
 
+## 🏦 R-InvestIQ — Built on This Framework
+
+**R-InvestIQ** is an English-language screening tool built on top of this framework by **Nehal Varma Pericherla** during a Relanto internship. It chains the checklist and verdict-report skills into a single command, and ships two front-ends on top of the base framework:
+
+- **Live website:** [nehalvarma31.github.io/ai-berkshire](https://nehalvarma31.github.io/ai-berkshire/) — every screened company as a clickable report
+- **Telegram bot** (`bot.py`) — message a company name, get a Pass/Watch/Avoid verdict back in chat
+- **One-command skill:** `/screen-EN {company}` in Claude Code
+
+See [`docs/workflow-EN.md`](docs/workflow-EN.md) for how to run it and [`docs/methodology-and-limitations.md`](docs/methodology-and-limitations.md) for the full methodology and honest limitations.
+
+*Companies screened so far: Apple, Google, Coca-Cola (🟡 WATCH), Intel (🔴 AVOID).*
+
+---
+
 ## Real Track Record
 
 > Not paper trading. This framework is backed by a real-money, audited portfolio.

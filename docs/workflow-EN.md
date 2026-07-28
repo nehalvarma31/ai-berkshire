@@ -13,9 +13,28 @@ Takes about 10–15 minutes per company.
 
 ---
 
-## How to Run It
+## Three Ways to Run It
 
-### 1. Open the project
+### Option A — Telegram bot (fastest, no terminal needed)
+
+Message the bot with any company name or ticker (e.g. "Coca-Cola" or "KO"). It runs the full screen, replies with the verdict in chat, and auto-saves the report to `reports/{Company}/`. Nothing to commit manually until you're ready to push to GitHub.
+
+### Option B — One command in Claude Code
+
+```
+/screen-EN {company}
+```
+
+Examples:
+```
+/screen-EN AAPL
+/screen-EN GOOGL
+/screen-EN Microsoft
+```
+
+Chains the checklist and the verdict report into a single command. Takes about 10–15 minutes. Saves both `reports/{Company}/{Company}-checklist-{date}.md` and `reports/{Company}/{Company}-verdict-{date}.md`.
+
+### Option C — Two-step manual (for extra control)
 
 Open PowerShell and run:
 
@@ -24,48 +43,33 @@ cd OneDrive/Desktop/ai-berkshire
 claude
 ```
 
-Select **"Yes, I trust this folder"** when prompted.
-
----
-
-### 2. Run the checklist
+Select **"Yes, I trust this folder"** when prompted, then:
 
 ```
 /investment-checklist-EN {company}
 ```
 
-Examples:
-```
-/investment-checklist-EN AAPL
-/investment-checklist-EN GOOGL
-/investment-checklist-EN Microsoft
-```
+This collects financial data, runs all 6 Buffett gates, and verifies the numbers using `financial_rigor.py`. Takes 7–10 minutes. Saves to `reports/{Company}/{Company}-checklist-{date}.md`.
 
-This collects financial data, runs all 6 Buffett gates, and verifies the numbers using `financial_rigor.py`. Takes 7–10 minutes.
-
-Report saves to: `reports/{Company}/{Company}-checklist-{date}.md`
-
----
-
-### 3. Run the verdict report
+Then:
 
 ```
 /verdict-report-EN {company}
 ```
 
-This reads the checklist and produces a clean one-page summary. Takes 1–2 minutes.
-
-Report saves to: `reports/{Company}/{Company}-verdict-{date}.md`
+This reads the checklist and produces the clean one-page summary. Takes 1–2 minutes. Saves to `reports/{Company}/{Company}-verdict-{date}.md`.
 
 ---
 
-### 4. Push to GitHub
+### Push to GitHub
 
 ```
 git add reports/{Company}/
 git commit -m "Add {Company} checklist and verdict - {PASS/WATCH/AVOID}"
 git push origin main
 ```
+
+Once pushed, the report is automatically live on the website: `nehalvarma31.github.io/ai-berkshire/#{company-slug}`
 
 ---
 
@@ -95,7 +99,7 @@ git push origin main
 
 | Company | Date | Verdict | Key Reason |
 |---------|------|---------|------------|
-| Apple (AAPL) | 2026-07-01 | 🟡 WATCH | Great business, no margin of safety at $287 |
+| Apple (AAPL) | 2026-07-27 | 🟡 WATCH | Great business, no margin of safety at $228 |
 | Google (GOOGL) | 2026-07-09 | 🟡 WATCH | Great business, thin margin of safety at $355 |
 | Coca-Cola (KO) | 2026-07-17 | 🟡 WATCH | Wonderful business, razor-thin margin of safety at $81 |
 | Intel (INTC) | 2026-07-27 | 🔴 AVOID | Negative FCF, eroded moat, no stable earnings base — automatic AVOID on Gates 1–4 |
